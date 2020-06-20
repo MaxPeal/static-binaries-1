@@ -12,6 +12,10 @@ ARCH_BUILD=(x86_64)
 
 if [[ $(docker version -f '{{.Server.Experimental}}') != "true" ]]; then
     >&2 echo "Error. Docker experimental features must be enabled"
+        echo 'e.g. with: '
+        echo 'sudo printf "{ \n \"experimental\": true\n}\n" >> /etc/docker/daemon.json'
+	echo 'mkdir $HOME/.docker && printf "{\n \"experimental\": \"enabled\"\n}\n" >> $HOME/.docker/config.json'
+        echo "sudo systemctl daemon-reload && sudo systemctl restart docker.service"
     exit 1
 fi
 
