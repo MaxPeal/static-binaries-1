@@ -11,7 +11,8 @@ RUN set -ex; \
             ./configure \
                 LDFLAGS="-static"; \
             make -j$(nproc --all); \
-            make check ; \
-	    strip ddrescue ddrescuelog; \
-        cp ddrescue ddrescuelog /out/; \
+	   make check; \
+        ls -laR; \
+	upx -9 -v lzip; \
+        cp -p lzip /out/; \
     rm -Rf $WORKDIR/*

@@ -1,14 +1,24 @@
 #!/bin/bash
 
-set -e
+set -vx
+#set -e
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 DIR_MAIN=$DIR/..
 DIR_BIN=$DIR_MAIN/bin
 
 
-# ARCH_BUILD=(x86_64 aarch64 x86 armv7l)
-ARCH_BUILD=(x86_64)
+####linux/amd64, linux/arm64, linux/riscv64, linux/ppc64le, linux/s390x, linux/386, linux/arm/v7, linux/arm/v6
+
+#ARCH_BUILD=(x86_64)
+ARCH_BUILD=(x86_64 aarch64 armv7l armv6l ppc64le mips64le )
+#ARCH_BUILD=(x86_64 aarch64 x86 armv7l armv6l ppc64le mips64le )
+#ARCH_BUILD=(x86_64 aarch64 x86 armv7 armv6 ppc64le s390x)
+# 2020-06-21 debian hat noch kein riscv64
+#ARCH_BUILD=(x86_64 aarch64 x86 armv7l armv6 ppc64le s390x riscv64)
+#ARCH_BUILD=(x86_64 aarch64 x86 armv7l)
+# ARCH_BUILD=(x86_64)
+
 
 if [[ $(docker version -f '{{.Server.Experimental}}') != "true" ]]; then
     >&2 echo "Error. Docker experimental features must be enabled"
@@ -26,18 +36,31 @@ function darch() {
     case "$1" in
     x86_64)     echo "linux/amd64" ;;
     x86)        echo "linux/386" ;; 
-    aarch64)    echo "linux/arm64/v8" ;; 
-    armv7l)     echo "linux/arm/v7" ;; 
-    *)          echo "unknown!"; exit 1 ;;
+    aarch64)     echo "linux/arm64/v8" ;;
+    armv64)     echo "linux/arm64/v8" ;;
+    armv7l)     echo "linux/arm/v7" ;;
+    armv6l)      echo "linux/arm/v6" ;;
+    armv5l)      echo "linux/arm/v5" ;;
+    ppc64le)    echo "linux/ppc64le" ;; 
+    s390x)      echo "linux/s390x" ;; 
+    mips64le)      echo "linux/mips64le" ;;
+    riscv64)    echo "linux/riscv64" ;; 
+    *)          echo "unknown!"; exit 1 ;; 
     esac
 }
 
 function osarch() {
     case "$1" in
     linux/amd64)        echo "x86_64" ;;
-    linux/386)          echo "x86" ;; 
-    linux/arm64/v8)     echo "aarch64" ;; 
+    linux/386)          echo "x86" ;;
+    linux/arm64/v8)     echo "aarch64" ;;
     linux/arm/v7)       echo "armv7l" ;; 
+    linux/arm/v6)       echo "armv6l" ;;
+    linux/arm/v5)       echo "armv5l" ;;
+    linux/ppc64le)      echo "ppc64le" ;;
+    linux/s390x)        echo "s390x" ;;
+    linux/mips64le)        echo "mips64le" ;;
+    linux/riscv64)      echo "riscv64" ;;
     *)                  echo "unknown!"; exit 1 ;;
     esac
 }
@@ -93,7 +116,7 @@ docker buildx inspect --bootstrap
 
 ### The Builder
 DOCKER_BUILDSYSTEM="localhost:5000/buildsystem"
-docker buildx build --pull -t $DOCKER_BUILDSYSTEM --output=type=registry,registry.insecure=true --platform $(join_by ${ARCH_BUILD[@]}) -f $DIR/buildsystem.dockerfile $DIR
+docker buildx build --pull -t $DOCKER_BUILDSYSTEM --output=type=registry,registry.insecure=true --platform $(join_by ${ARCH_BUILD[@]}) -f $DIR/buildsystem.dockerfile $DIR --progress plain
 ####
 
 
@@ -110,6 +133,16 @@ while read line; do
     for arch in ${ARCH_BUILD[@]}; do
         mkdir -p $DIR_BIN/linux/$arch
         darch=$(darch $arch)
+
+echo "######################"
+echo "ARCH_BUILD  $ARCH_BUILD"
+echo "######################"
+echo "arch $arch"
+echo "######################"
+echo "darch $darch"
+echo "######################"
+
+
 
         if [[ ! -f $DIR_BIN/linux/$arch/$bin_sample ]]; then
             # If this binary doesn't exist, we must build
@@ -133,7 +166,7 @@ while read line; do
         dname="vk496-$name"
         echo "BUILD $name for ${NEED_BUILD[@]}"
 
-        ( cd $DIR/software/$name; docker buildx build --pull -t localhost:5000/$dname --output=type=registry,registry.insecure=true --platform $(simple_join_by ${NEED_BUILD[@]}) --build-arg SOURCE=$url . )
+        ( cd $DIR/software/$name; docker buildx build --pull -t localhost:5000/$dname --output=type=registry,registry.insecure=true --platform $(simple_join_by ${NEED_BUILD[@]}) --build-arg SOURCE=$url . --progress plain )
 
 
         for darch in ${NEED_BUILD[@]}; do
