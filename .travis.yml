@@ -17,6 +17,7 @@ before_install:
 - sudo printf "\173 \n \042experimental\042\072 true\n\175\n" >> /etc/docker/daemon.json
 - mkdir $HOME/.docker && printf "\173 \n \042experimental\042\072 \042enabled\042\n\175\n" >> $HOME/.docker/config.json
 - sudo systemctl daemon-reload && sudo systemctl restart docker.service
+- sudo systemctl daemon-reload && sudo systemctl restart docker
 - docker version
 - grep -v fooNULL /etc/docker/daemon.json ||true
 - grep -v fooNULL $HOME/.docker/config.json ||true
