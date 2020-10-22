@@ -1,5 +1,9 @@
 language: cpp
 sudo: required
+dist: focal
+cache:
+  apt: true
+  ccache: true
 services:
 - memcached
 - docker
