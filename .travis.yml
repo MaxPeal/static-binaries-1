@@ -1,4 +1,14 @@
 language: cpp
 sudo: required
+services:
+- memcached
+- docker
+before_install:
+- echo $LANG
+- echo $LC_ALL
+- sudo printf "{ \n \"experimental\": true\n}\n" >> /etc/docker/daemon.json
+- mkdir $HOME/.docker && printf "{\n \"experimental\": \"enabled\"\n}\n" >> $HOME/.docker/config.json
+- sudo systemctl daemon-reload && sudo systemctl restart docker.service
 script:
 - if [ $TRAVIS_OS_NAME == linux ]; then cd build && ./build.sh ; fi
+#after_success:
