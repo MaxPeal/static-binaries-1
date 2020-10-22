@@ -10,10 +10,16 @@ services:
 before_install:
 - echo $LANG
 - echo $LC_ALL
+- docker version
+- cat /etc/docker/*.json
+- cat $HOME/.docker/*.json
 - sudo mkdir -p /etc/docker/
 - sudo printf "\173 \n \042experimental\042\072 true\n\175\n" >> /etc/docker/daemon.json
 - mkdir $HOME/.docker && printf "\173 \n \042experimental\042\072 \042enabled\042\n\175\n" >> $HOME/.docker/config.json
 - sudo systemctl daemon-reload && sudo systemctl restart docker.service
+- docker version
+- cat /etc/docker/*.json
+- cat $HOME/.docker/*.json
 script:
 - if [ $TRAVIS_OS_NAME == linux ]; then cd build && ./build.sh ; fi
 #after_success:
