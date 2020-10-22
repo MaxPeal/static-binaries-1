@@ -1,0 +1,4 @@
+language: cpp
+sudo: required
+script:
+- if [ $TRAVIS_OS_NAME == linux ]; then cd build && ./build.sh ; fi
