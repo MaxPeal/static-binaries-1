@@ -10,6 +10,7 @@ services:
 before_install:
 - echo $LANG
 - echo $LC_ALL
+- sudo mkdir /etc/docker/ ||:
 - sudo printf "{ \n \"experimental\": true\n}\n" >> /etc/docker/daemon.json
 - mkdir $HOME/.docker && printf "{\n \"experimental\": \"enabled\"\n}\n" >> $HOME/.docker/config.json
 - sudo systemctl daemon-reload && sudo systemctl restart docker.service
