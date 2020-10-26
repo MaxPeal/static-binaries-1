@@ -13,9 +13,14 @@ before_install:
 - docker version
 - grep -v fooNULL /etc/docker/daemon.json ||true
 - grep -v fooNULL $HOME/.docker/config.json ||true
-- sudo mkdir -p /etc/docker/
-- sudo printf "\173 \n \042experimental\042\072 true\n\175\n" >> /etc/docker/daemon.json
-- mkdir $HOME/.docker && printf "\173 \n \042experimental\042\072 \042enabled\042\n\175\n" >> $HOME/.docker/config.json
+# https://github.com/travis-ci/travis-ci/issues/8740
+- apt install -y jq
+- echo '{}' | sudo tee -a /etc/docker/daemon.json
+- cat <<< $(jq '.+{"experimental":"enabled"}' ~/.docker/config.json) > ~/.docker/config.json
+- sudo cat <<< $(jq '.+{"experimental":true}' /etc/docker/daemon.json) | sudo tee /etc/docker/daemon.json
+#- sudo mkdir -p /etc/docker/
+#- sudo printf "\173 \n \042experimental\042\072 true\n\175\n" >> /etc/docker/daemon.json
+#- mkdir $HOME/.docker && printf "\173 \n \042experimental\042\072 \042enabled\042\n\175\n" >> $HOME/.docker/config.json
 - sudo systemctl daemon-reload && sudo systemctl restart docker.service
 - sudo systemctl daemon-reload && sudo systemctl restart docker
 - docker version
